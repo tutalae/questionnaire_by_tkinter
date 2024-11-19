@@ -365,7 +365,7 @@ class GenderQuestion(Frame):
 
         self.question_label.pack(anchor='w', padx=20, pady=20)
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
         self.question_label.pack(anchor='w', padx=20, pady=20)
 
         # Next question button with fo  nt
@@ -608,17 +608,31 @@ class MindfulnessExperienceDetail(ttk.Frame):
 
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         # Next Button
         next_button = ttk.Button(self, text="คำถามถัดไป", command=self.save_and_proceed)
         next_button.pack(anchor='center', pady=20)
 
     def save_and_proceed(self):
-        """Save the user's input from this page and go to the next frame"""
-        # Ensure at least one practice type is selected or "อื่นๆ" is filled
-        if not (self.anapanasati_var.get() or self.yub_pong_var.get() or self.metta_var.get() or
-                self.watch_mind_var.get() or self.asubha_var.get() or self.other_var.get().strip()):
+        """Save the user's input from this page and go to the next frame."""
+        # Ensure at least one frequency is selected and filled
+        if not (
+                (self.daily_var.get() and (self.daily_count.get().strip() or self.daily_duration.get().strip())) or
+                (self.weekly_var.get() and (self.weekly_count.get().strip() or self.weekly_duration.get().strip())) or
+                (self.monthly_var.get() and (
+                        self.monthly_count.get().strip() or self.monthly_duration.get().strip())) or
+                (self.yearly_var.get() and (self.yearly_count.get().strip() or self.yearly_duration.get().strip()))
+        ):
+            messagebox.showwarning("Incomplete Input",
+                                   "โปรดเลือกและกรอกความถี่อย่างน้อย 1 ประเภท เช่น รายวัน รายสัปดาห์ รายเดือน หรือ รายปี")
+            return  # Stop execution if the validation fails
+
+        # Ensure at least one mindfulness practice type is selected or "อื่นๆ" is filled
+        if not (
+                self.anapanasati_var.get() or self.yub_pong_var.get() or self.metta_var.get() or
+                self.watch_mind_var.get() or self.asubha_var.get() or self.other_var.get().strip()
+        ):
             messagebox.showwarning("Incomplete Input", "โปรดเลือกอย่างน้อย 1 รูปแบบของการฝึกสติหรือระบุใน 'อื่นๆ'")
             return  # Stop execution if the validation fails
 
@@ -664,7 +678,7 @@ class MindfulAttentionAwarenessScale(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
             "ฉันอาจเคยสัมผัสกับอารมณ์บางอย่าง แต่ไม่สามารถรู้สึกถึงมันได้จนกว่ามันผ่านไปแล้ว",
@@ -691,7 +705,7 @@ class MindfulAttentionAwarenessScale(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -784,7 +798,7 @@ class FFMQ_SF(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
                         "ฉันสามารถหาคำพูดมาอธิบายความรู้สึกของฉันได้โดยไม่ยาก",
@@ -821,7 +835,7 @@ class FFMQ_SF(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -905,7 +919,7 @@ class PHLMS(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
                     "ฉันตระหนักรู้ว่า มีความคิดอะไรผ่านเข้ามาในใจบ้าง",
@@ -938,7 +952,7 @@ class PHLMS(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -1027,7 +1041,7 @@ class RuminativeThinkingScale(Frame):
         # Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
                     "คิดว่า ท่านโดดเดี่ยวเพียงใด",
@@ -1062,7 +1076,7 @@ class RuminativeThinkingScale(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -1148,7 +1162,7 @@ class NonAttachmentToSelf(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
                 "ฉันปล่อยวางความคิดที่ไม่เป็นประโยชน์กับตัวเองได้",
@@ -1168,7 +1182,7 @@ class NonAttachmentToSelf(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -1257,7 +1271,7 @@ class PerceivedStress(Frame):
         # Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
 
         self.questions = [
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกผิดหวังหรือไม่สบายใจ เพราะมีบางสิ่งบางอย่างเกิดขึ้นอย่างไม่คาดคิด",
@@ -1399,7 +1413,7 @@ class OverallEmotionalWellbeing(Frame):
         Label(self, text=" ", font=("Sarabun", 20)).pack()
         self.question_label = Label(self, text="{}. {}".format(self.index + 1, self.questions[self.index]),
                                     font=custom_font)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
+        self.question_label.pack(anchor='w', padx=20, pady=10)
 
         Label(self, text="ระดับคะแนนและความหมาย", font=custom_font).pack(padx=50, pady=20)
 
@@ -1425,7 +1439,7 @@ class OverallEmotionalWellbeing(Frame):
 
         self.question_label.pack(anchor='w', padx=20, pady=20)
         Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
+              font=custom_font).pack(padx=50, pady=10)
         self.question_label.pack(anchor='w', padx=20, pady=20)
 
         # Create next question button
