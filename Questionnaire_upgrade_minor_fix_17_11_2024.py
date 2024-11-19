@@ -7,7 +7,8 @@ Date: 2024.08.20
 """
 
 from tkinter import (Tk, Label, ttk, Button, Radiobutton, Frame, Menu,
-                     messagebox, StringVar, Listbox, BROWSE, END, Toplevel, Entry, IntVar)
+                     messagebox, StringVar, Listbox, BROWSE, END, Toplevel, Entry, IntVar,
+                     TclError)
 import time
 import os.path
 import datetime
@@ -118,7 +119,7 @@ def finishedDialog(title, message):
     dialog = Tk()
     dialog.wm_title(title)
     dialog.grab_set()
-    dialogWidth, dialogHeight = 500, 250  # Increased dimensions for a larger dialog
+    dialogWidth, dialogHeight = 600, 250  # Increased dimensions for a larger dialog
     positionRight = int(dialog.winfo_screenwidth() / 2 - dialogWidth / 2)
     positionDown = int(dialog.winfo_screenheight() / 2 - dialogHeight / 2)
     dialog.geometry("{}x{}+{}+{}".format(
@@ -662,6 +663,9 @@ class MindfulAttentionAwarenessScale(Frame):
 
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
+
         self.questions = [
             "ฉันอาจเคยสัมผัสกับอารมณ์บางอย่าง แต่ไม่สามารถรู้สึกถึงมันได้จนกว่ามันผ่านไปแล้ว",
             "ฉันทำสิ่งของแตกหักเพราะความประมาท. ไม่ได้ใส่ใจ หรือคิดถึงสิ่งอื่นอยู่",
@@ -711,43 +715,54 @@ class MindfulAttentionAwarenessScale(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=15, pady=20)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**", font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         next_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         next_button.pack(ipady=5, pady=20)
 
     def nextQuestion(self):
-        '''
+        """
         When button is clicked, add user's input to a list
-        and display next question.
-        '''
+        and display the next question or end the survey.
+        """
         answer = self.var.get()
 
         if answer == '0':
-            dialogBox("ยังไม่ได้เลือกคำตอบ",
-                      "โปรดเลือกคำตอบ\nลองอีกครั้ง")
+            dialogBox("ยังไม่ได้เลือกคำตอบ", "โปรดเลือกคำตอบ\nลองอีกครั้ง")
         elif self.index == (self.length_of_list - 1):
-            # get the last answer from user
+            # Get the last answer from the user
             selected_answer = self.var.get()
             MAA_list.append(selected_answer)
-            print("MAAS", MAA_list)
 
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    # Ignore widgets that don't have a state option
+                    pass
+
+            # Show the dialog box for the next survey
             next_survey_text = "จบแบบวัด MAAS \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด FFMQ-SF"
-            nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text,
-                             lambda: self.controller.show_frame(FFMQ_SF))
+            nextSurveyDialog(
+                "แบบสอบถามถัดไป",
+                next_survey_text,
+                lambda: self.controller.show_frame(FFMQ_SF)
+            )
         else:
             self.index = (self.index + 1) % self.length_of_list
 
+            # Update the question label
             self.question_label.config(text="{}. {}".format(self.index + 1, self.questions[self.index]))
+
+            # Save the current answer
             selected_answer = self.var.get()
             MAA_list.append(selected_answer)
 
-            self.var.set(0)  # reset value for next question
+            # Reset value for the next question
+            self.var.set(0)
 
-            time.sleep(.2)  # delay between questions
+            # Optional: Add a short delay for smoother transition
+            time.sleep(0.2)
 
 
 class FFMQ_SF(Frame):
@@ -767,6 +782,9 @@ class FFMQ_SF(Frame):
         ttk.Label(self, text="โปรดอ่านข้อความ แล้วเลือกตัวเลขที่ตรงกับความเป็นจริงของท่านที่สุดในช่วง 2 สัปดาห์ที่ผ่านมา", font=custom_font,
                   borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
+
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
 
         self.questions = [
                         "ฉันสามารถหาคำพูดมาอธิบายความรู้สึกของฉันได้โดยไม่ยาก",
@@ -827,11 +845,6 @@ class FFMQ_SF(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=15, pady=20)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         enter_button.pack(ipady=5, pady=20)
@@ -851,6 +864,13 @@ class FFMQ_SF(Frame):
             selected_answer = self.var.get()
             FFMQ_SF_list.append(selected_answer)
             print("FFMQ_SF", FFMQ_SF_list)
+
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    pass  # Ignore widgets that don't have a state option
 
             next_survey_text = "จบแบบวัด FFMQ-SF \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด PHLMS"
             nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text,
@@ -883,6 +903,9 @@ class PHLMS(Frame):
         ttk.Label(self, text="คำชี้แจง : โปรดอ่านข้อความ แล้วเลือกตัวเลขที่ตรงกับความเป็นจริงของท่านที่สุดในช่วง 1 สัปดาห์ที่ผ่านมา", font=custom_font,
                   borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
+
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
 
         self.questions = [
                     "ฉันตระหนักรู้ว่า มีความคิดอะไรผ่านเข้ามาในใจบ้าง",
@@ -939,11 +962,6 @@ class PHLMS(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=15, pady=20)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         enter_button.pack(ipady=5, pady=20)
@@ -964,6 +982,13 @@ class PHLMS(Frame):
 
             PHLMS_list.append(selected_answer)
             print("PHLMS", PHLMS_list)
+
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    pass  # Ignore widgets that don't have a state option
 
             next_survey_text = "จบแบบวัด PHLMS \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด Ruminative Thinking Scale"
             nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text, lambda: self.controller.show_frame(RuminativeThinkingScale))
@@ -1000,6 +1025,9 @@ class RuminativeThinkingScale(Frame):
                             "กรุณาเลือกสิ่งที่ท่านทำโดยทั่วไปไม่ใช่สิ่งที่ท่านคิดว่าท่านควรกระทำ \n",
                     borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         # Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
+
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
 
         self.questions = [
                     "คิดว่า ท่านโดดเดี่ยวเพียงใด",
@@ -1058,11 +1086,6 @@ class RuminativeThinkingScale(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=15, pady=20)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         enter_button.pack(ipady=5, pady=20)
@@ -1083,6 +1106,13 @@ class RuminativeThinkingScale(Frame):
 
             RuminativeThinking_list.append(selected_answer)
             print("RuminativeThinking", RuminativeThinking_list)
+
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    pass  # Ignore widgets that don't have a state option
 
             next_survey_text = "จบแบบวัดความหมกมุ่นครุ่นคิด \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด Non-Attachment To Self"
             nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text, lambda: self.controller.show_frame(NonAttachmentToSelf))
@@ -1116,6 +1146,9 @@ class NonAttachmentToSelf(Frame):
         ttk.Label(self, text="โปรดอ่านข้อความ แล้วเลือกตัวเลขที่ตรงกับความเป็นจริงของท่านที่สุด",
                     borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
+
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
 
         self.questions = [
                 "ฉันปล่อยวางความคิดที่ไม่เป็นประโยชน์กับตัวเองได้",
@@ -1160,11 +1193,6 @@ class NonAttachmentToSelf(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=10, pady=10)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         enter_button.pack(ipady=5, pady=20)
@@ -1185,6 +1213,13 @@ class NonAttachmentToSelf(Frame):
 
             NonAttachmentToSelf_list.append(selected_answer)
             print("NonAttachmentToSelf", NonAttachmentToSelf_list)
+
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    pass  # Ignore widgets that don't have a state option
 
             next_survey_text = "จบแบบวัดความไม่ยึดติดตัวตน \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด Perceived Stress"
             nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text, lambda: self.controller.show_frame(PerceivedStress))
@@ -1220,6 +1255,9 @@ class PerceivedStress(Frame):
             "และตอบอย่างรวดเร็ว พยายามอย่านับว่ากี่ครั้งที่ท่านคิดอย่างนั้นแต่ให้เลือกตอบด้วยการคาดคะเนอย่างสมเหตุสมผล\n"),
         borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         # Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
+
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=20)
 
         self.questions = [
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกผิดหวังหรือไม่สบายใจ เพราะมีบางสิ่งบางอย่างเกิดขึ้นอย่างไม่คาดคิด",
@@ -1275,11 +1313,6 @@ class PerceivedStress(Frame):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=10, pady=10)
 
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=20)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
         enter_button.pack(ipady=5, pady=20)
@@ -1301,6 +1334,13 @@ class PerceivedStress(Frame):
 
             PerceivedStress_list.append(selected_answer)
             print("PerceivedStress", PerceivedStress_list)
+
+            # Disable interactive widgets before showing the dialog
+            for widget in self.winfo_children():
+                try:
+                    widget.configure(state='disabled')
+                except TclError:
+                    pass  # Ignore widgets that don't have a state option
 
             next_survey_text = "จบแบบวัดการรับรู้ความเครียด  \n \n \n กด เริ่ม เพื่อเริ่มทำแบบวัด Overall Emotional Well being"
             nextSurveyDialog("แบบสอบถามถัดไป", next_survey_text, lambda: self.controller.show_frame(OverallEmotionalWellbeing))
@@ -1436,14 +1476,14 @@ class OverallEmotionalWellbeing(Frame):
 
         # Include Participant ID and Timestamp in each list
         answers_lists = [
-            [status + participant_id.get()] + [current_datetime] + general_answers_list,
-            [status + participant_id.get()] + [current_datetime] + MAA_list,
-            [status + participant_id.get()] + [current_datetime] + FFMQ_SF_list,
-            [status + participant_id.get()] + [current_datetime] + PHLMS_list,
-            [status + participant_id.get()] + [current_datetime] + RuminativeThinking_list,
-            [status + participant_id.get()] + [current_datetime] + NonAttachmentToSelf_list,
-            [status + participant_id.get()] + [current_datetime] + PerceivedStress_list,
-            [status + participant_id.get()] + [current_datetime] + OverallEmotionalWellbeing_list
+            [status] + [current_datetime] + general_answers_list,
+            [status] + [current_datetime] + MAA_list,
+            [status] + [current_datetime] + FFMQ_SF_list,
+            [status] + [current_datetime] + PHLMS_list,
+            [status] + [current_datetime] + RuminativeThinking_list,
+            [status] + [current_datetime] + NonAttachmentToSelf_list,
+            [status] + [current_datetime] + PerceivedStress_list,
+            [status] + [current_datetime] + OverallEmotionalWellbeing_list
         ]
 
         # Iterate through each filename and corresponding answers list
