@@ -263,29 +263,13 @@ class StartPage(Frame):
         Frame.__init__(self, master)
         self.controller = controller
 
-        global participant_id  # Declare participant_id as a global variable
-
-        # Initialize participant_id as a global variable
-        participant_id = StringVar()
-
         # set up start page window
         self.configure(bg="#EFF3F6")
-
-        # Top frame to hold title and participant ID entry
-        # top_frame = Frame(self, bg="#EFF3F6")
-        # top_frame.pack(fill="x", pady=10, padx=10)
 
         # Title label
         start_label = Label(text="แบบประเมินสติ ความหมกมุ่นครุ่นคิด และสุขภาวะทางอารมณ์",
                             font=("Sarabun", 20), borderwidth=2, relief="ridge")
         start_label.pack(side="left", padx=10, ipadx=5, ipady=3)
-
-        # Participant ID label and entry field
-        # participant_label = Label(top_frame, text="Participant ID", font=("Sarabun", 20), bg="#EFF3F6")
-        # participant_label.pack(side="right", padx=(10, 0))
-        #
-        # participant_entry = Entry(top_frame, textvariable=participant_id, font=("Sarabun", 20), width=10)
-        # participant_entry.pack(side="right")
 
         # Main information text with additional left padding
         info_text = (
@@ -306,7 +290,9 @@ class StartPage(Frame):
         info_label.pack(pady=10, padx=(30, 10), ipadx=20, ipady=3, fill="x")  # Added left padding with padx=(30, 10)
 
         # Purpose text with additional left padding
-        purpose_text = "กรุณาตอบตามความเป็นจริงและใช้เวลาในการตอบคำถามแต่ละข้ออย่างรวดเร็ว ขอบคุณสำหรับการเข้าร่วมในแบบประเมินของเรา"
+        purpose_text = ("กรุณาตอบตามความเป็นจริงและใช้เวลาในการตอบคำถามแต่ละข้ออย่างรวดเร็ว \n"
+                        "**หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้** \n"
+                        "ขอบคุณสำหรับการเข้าร่วมในแบบประเมินของเรา")
         purpose_label = Label(self, text=purpose_text, font=("Sarabun", 20), borderwidth=2, relief="ridge",
                               anchor="w", justify="left")
         purpose_label.pack(pady=10, padx=(30, 10), ipadx=5, ipady=3, fill="x")  # Added left padding with padx=(30, 10)
@@ -316,7 +302,7 @@ class StartPage(Frame):
 
         # Create the button with the specified font
         start_button = ttk.Button(self, text="เริ่มต้นแบบสอบถาม",
-                                  # command=lambda: self.checkParticipantID(controller),
+                                  command=lambda: controller.show_frame(GenderQuestion),
                                   style="Custom.TButton")
         start_button.pack(ipadx=10, ipady=15, pady=15)
 
@@ -328,15 +314,6 @@ class StartPage(Frame):
         quit_button = ttk.Button(self, text="ออกจากแบบสอบถาม", command=self.on_closing,
                                  style="Custom.TButton")
         quit_button.pack(ipady=3, pady=10)
-
-    def checkParticipantID(self, controller):
-        """
-        Check if the participant ID is filled. If not, show a popup dialog.
-        """
-        if not participant_id.get().strip():  # Check if participant ID is empty or contains only spaces
-            messagebox.showwarning("Missing Participant ID", "กรุณากรอก Participant ID ก่อนเริ่มแบบสอบถาม")
-        else:
-            controller.show_frame(GenderQuestion)  # Proceed to the next frame if ID is valid
 
     def on_closing(self):
         """
@@ -638,11 +615,22 @@ class MindfulnessExperienceDetail(ttk.Frame):
 
     def save_and_proceed(self):
         """Save the user's input from this page and go to the next frame"""
+        # Ensure at least one practice type is selected or "อื่นๆ" is filled
+        if not (self.anapanasati_var.get() or self.yub_pong_var.get() or self.metta_var.get() or
+                self.watch_mind_var.get() or self.asubha_var.get() or self.other_var.get().strip()):
+            messagebox.showwarning("Incomplete Input", "โปรดเลือกอย่างน้อย 1 รูปแบบของการฝึกสติหรือระบุใน 'อื่นๆ'")
+            return  # Stop execution if the validation fails
+
+        # Save the responses
         additional_response = {
-            "daily": {"enabled": self.daily_var.get(), "count": self.daily_count.get(), "duration": self.daily_duration.get()},
-            "weekly": {"enabled": self.weekly_var.get(), "count": self.weekly_count.get(), "duration": self.weekly_duration.get()},
-            "monthly": {"enabled": self.monthly_var.get(), "count": self.monthly_count.get(), "duration": self.monthly_duration.get()},
-            "yearly": {"enabled": self.yearly_var.get(), "count": self.yearly_count.get(), "duration": self.yearly_duration.get()},
+            "daily": {"enabled": self.daily_var.get(), "count": self.daily_count.get(),
+                      "duration": self.daily_duration.get()},
+            "weekly": {"enabled": self.weekly_var.get(), "count": self.weekly_count.get(),
+                       "duration": self.weekly_duration.get()},
+            "monthly": {"enabled": self.monthly_var.get(), "count": self.monthly_count.get(),
+                        "duration": self.monthly_duration.get()},
+            "yearly": {"enabled": self.yearly_var.get(), "count": self.yearly_count.get(),
+                       "duration": self.yearly_duration.get()},
             "anapanasati": self.anapanasati_var.get(),
             "yub_pong": self.yub_pong_var.get(),
             "metta": self.metta_var.get(),
