@@ -267,10 +267,10 @@ class StartPage(Frame):
         # set up start page window
         self.configure(bg="#EFF3F6")
 
-        # Title label
-        start_label = Label(text="แบบประเมินสติ ความหมกมุ่นครุ่นคิด และสุขภาวะทางอารมณ์",
-                            font=("Sarabun", 20), borderwidth=2, relief="ridge")
-        start_label.pack(side="left", padx=10, ipadx=5, ipady=3)
+        # # Title label
+        # start_label = Label(text="แบบประเมินสติ ความหมกมุ่นครุ่นคิด และสุขภาวะทางอารมณ์",
+        #                     font=("Sarabun", 20), borderwidth=2, relief="ridge")
+        # start_label.pack(side="left", padx=10, ipadx=5, ipady=3)
 
         # Main information text with additional left padding
         info_text = (
@@ -340,6 +340,9 @@ class GenderQuestion(Frame):
                                 borderwidth=2, relief="ridge")
         title_label.pack(padx=10, pady=10)
 
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=10)
+
         self.question = "เพศ"
 
         # Set up question label
@@ -362,11 +365,6 @@ class GenderQuestion(Frame):
         for text, value in choices:
             b = ttk.Radiobutton(checkbox_frame, text=text, variable=self.var, value=value, style="Custom.TRadiobutton")
             b.pack(fill='x', expand=True, ipadx=20, ipady=2)
-
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=10)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
 
         # Next question button with fo  nt
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
@@ -1275,7 +1273,7 @@ class PerceivedStress(Frame):
 
         self.questions = [
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกผิดหวังหรือไม่สบายใจ เพราะมีบางสิ่งบางอย่างเกิดขึ้นอย่างไม่คาดคิด",
-            "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่มีเหตุการณ์สำคัญที่ท่านไม่สามารถเปลี่ยนแปลงหรือจัดการได้",
+            "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่มีเหตุการณ์ที่ท่านไม่สามารถเปลี่ยนแปลงหรือจัดการได้",
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกเครียดและกระวนกระวายใจ",
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกว่าท่านสามารถแก้ไขปัญหาที่ทำให้ท่านไม่สบายใจในชีวิตประจำวันได้สำเร็จ",
             "ในช่วง 1 เดือนที่ผ่านมา บ่อยครั้งเพียงใดที่ท่านรู้สึกว่าท่านสามารถจัดการกับปัญหาที่สำคัญในชีวิตได้สำเร็จ",
@@ -1388,6 +1386,9 @@ class OverallEmotionalWellbeing(Frame):
         borderwidth=2, relief="ridge").pack(padx=10, pady=10)
         Label(self, text=" ", font=("Sarabun", 20)).pack(pady=10)
 
+        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
+              font=custom_font).pack(padx=50, pady=10)
+
         self.questions = [
                 "ชีวิตทำให้ฉันรู้สึกตื่นเต้น",
                 "ฉันรู้สึกสงบสุขในชีวิต",
@@ -1436,11 +1437,6 @@ class OverallEmotionalWellbeing(Frame):
         for col, (text, value) in enumerate(scale_values):
             radio = Radiobutton(scale_frame, text=text, variable=self.var, value=value, font=("Sarabun", 18))
             radio.grid(row=1, column=col, padx=10, pady=10)
-
-        self.question_label.pack(anchor='w', padx=20, pady=20)
-        Label(self, text="**หมายเหตุ หลังจากกดเพื่อทำคำถามถัดไป ท่านไม่สามารถกลับมาแก้ไขคำตอบได้**",
-              font=custom_font).pack(padx=50, pady=10)
-        self.question_label.pack(anchor='w', padx=20, pady=20)
 
         # Create next question button
         enter_button = ttk.Button(self, text="คำถามถัดไป", command=self.nextQuestion)
