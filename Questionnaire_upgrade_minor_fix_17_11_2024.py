@@ -114,34 +114,35 @@ def disable_event():
 
 def finishedDialog(title, message):
     """
-    Display the finished dialog box when the user reaches the end of the survey.
+    Display the finished dialog box in full-screen mode when the user reaches the end of the survey.
     """
     dialog = Tk()
     dialog.wm_title(title)
     dialog.grab_set()
-    dialogWidth, dialogHeight = 600, 250  # Increased dimensions for a larger dialog
-    positionRight = int(dialog.winfo_screenwidth() / 2 - dialogWidth / 2)
-    positionDown = int(dialog.winfo_screenheight() / 2 - dialogHeight / 2)
-    dialog.geometry("{}x{}+{}+{}".format(
-        dialogWidth, dialogHeight, positionRight, positionDown))
-    dialog.maxsize(dialogWidth, dialogHeight)
-    dialog.overrideredirect(True)
+
+    # Make the dialog full-screen
+    dialog.attributes("-fullscreen", True)
+    dialog.configure(bg="white")  # Optional: Set a background color
 
     # Message label with Sarabun font size 20
-    label = Label(dialog, text=message, font=("Sarabun", 20), wraplength=450, justify="center")
-    label.pack(side="top", fill="x", pady=20)
+    label = Label(dialog, text=message, font=("Sarabun", 48), wraplength=1000, justify="center", bg="white")
+    label.pack(side="top", fill="x", pady=40)
 
     # OK button with larger font
     ok_button = ttk.Button(dialog, text="จบแบบสอบถาม", command=quit, style="Custom.TButton")
-    ok_button.pack(ipady=10, pady=20)
+    ok_button.pack(ipady=20, pady=40)
 
     # Configure the style for the button
     s = ttk.Style()
-    s.configure("Custom.TButton", font=("Sarabun", 20))
+    s.configure("Custom.TButton", font=("Sarabun", 24))
 
     # Prevent ALT + F4 from closing the dialog
+    def disable_event():
+        pass
+
     dialog.protocol("WM_DELETE_WINDOW", disable_event)
     dialog.mainloop()
+
 
 class otherPopUpDialog(object):
     """
@@ -304,6 +305,7 @@ class StartPage(Frame):
         # Create the button with the specified font
         start_button = ttk.Button(self, text="เริ่มต้นแบบสอบถาม",
                                   command=lambda: controller.show_frame(GenderQuestion),
+                                  # command=lambda: controller.show_frame(OverallEmotionalWellbeing),
                                   style="Custom.TButton")
         start_button.pack(ipadx=10, ipady=15, pady=15)
 
@@ -1366,6 +1368,13 @@ class PerceivedStress(Frame):
             self.var.set(0)  # reset value for next question
             time.sleep(.2)  # delay between questions
 
+class ThankYouPage(Frame):
+    def __init__(self, master, controller):
+        Frame.__init__(self, master)
+        self.controller = controller
+        Label(self, text="ขอบคุณที่ทำแบบประเมิน!", font=("Sarabun", 24)).pack(pady=20)
+        ttk.Button(self, text="ปิด", command=controller.quit).pack(pady=20)
+
 
 class OverallEmotionalWellbeing(Frame):
     """
@@ -1452,7 +1461,10 @@ class OverallEmotionalWellbeing(Frame):
             dialogBox("ไม่มีคำตอบ", "คุณไม่ได้เลือกคำตอบ.\nลองอีกครั้ง.")
         elif self.index == (self.length_of_list - 1):
             # Add the last answer from the user
-            OverallEmotionalWellbeing_list.append(answer)  # Append only once
+            if len(OverallEmotionalWellbeing_list) < self.length_of_list:
+                OverallEmotionalWellbeing_list.append(answer)  # Append only once
+            else:
+                print("Error: Answer list exceeds the number of questions.")
             print("OverallEmotionalWellbeing", OverallEmotionalWellbeing_list)
 
             # Save the data once
@@ -1461,9 +1473,14 @@ class OverallEmotionalWellbeing(Frame):
             # Show the "Thank you" message
             finished_text = "ขอขอบคุณท่านที่สละเวลาในการตอบแบบประเมิน\n"
             finishedDialog("จบช่วงการตอบแบบประเมิน", finished_text)
+
+            self.destroy()  # Destroy the current questionnaire frame
         else:
             # Add the selected answer to the list and move to the next question
-            OverallEmotionalWellbeing_list.append(answer)  # Append only once
+            if len(OverallEmotionalWellbeing_list) < self.length_of_list:
+                OverallEmotionalWellbeing_list.append(answer)  # Append only once
+            else:
+                print("Error: Answer list exceeds the number of questions.")
             self.index += 1
             self.question_label.config(text="{}. {}".format(self.index + 1, self.questions[self.index]))
             self.var.set(0)  # Reset value for the next question
@@ -1473,32 +1490,42 @@ class OverallEmotionalWellbeing(Frame):
         """
         Save all the answers to their respective CSV files.
         """
-        filenames = [
-            '01_general_answers.csv',
-            '02_MAA_answers.csv',
-            '03_FFMQ_SF_answers.csv',
-            '04_PHLMS_answers.csv',
-            '05_RuminativeThinking_answers.csv',
-            '06_NonAttachmentToSelf_answers.csv',
-            '07_PerceivedStress_answers.csv',
-            '08_OverallEmotionalWellbeing_answers.csv'
-        ]
 
-        # Include Participant ID and Timestamp in each list
-        answers_lists = [
-            [status] + [current_datetime] + general_answers_list,
-            [status] + [current_datetime] + MAA_list,
-            [status] + [current_datetime] + FFMQ_SF_list,
-            [status] + [current_datetime] + PHLMS_list,
-            [status] + [current_datetime] + RuminativeThinking_list,
-            [status] + [current_datetime] + NonAttachmentToSelf_list,
-            [status] + [current_datetime] + PerceivedStress_list,
-            [status] + [current_datetime] + OverallEmotionalWellbeing_list
-        ]
+        print("Saving answers...")  # Debugging log
+        try:
 
-        # Iterate through each filename and corresponding answers list
-        for filename, answers in zip(filenames, answers_lists):
-            self.writeToFile(filename, answers)
+            filenames = [
+                '01_general_answers.csv',
+                '02_MAA_answers.csv',
+                '03_FFMQ_SF_answers.csv',
+                '04_PHLMS_answers.csv',
+                '05_RuminativeThinking_answers.csv',
+                '06_NonAttachmentToSelf_answers.csv',
+                '07_PerceivedStress_answers.csv',
+                '08_OverallEmotionalWellbeing_answers.csv'
+            ]
+
+            # Include Participant ID and Timestamp in each list
+            answers_lists = [
+                [status] + [current_datetime] + general_answers_list,
+                [status] + [current_datetime] + MAA_list,
+                [status] + [current_datetime] + FFMQ_SF_list,
+                [status] + [current_datetime] + PHLMS_list,
+                [status] + [current_datetime] + RuminativeThinking_list,
+                [status] + [current_datetime] + NonAttachmentToSelf_list,
+                [status] + [current_datetime] + PerceivedStress_list,
+                [status] + [current_datetime] + OverallEmotionalWellbeing_list
+            ]
+
+            # Iterate through each filename and corresponding answers list
+            for filename, answers in zip(filenames, answers_lists):
+                self.writeToFile(filename, answers)
+
+            # Existing save logic here
+            print("Answers saved successfully.")  # Debugging log
+
+        except Exception as e:
+            print(f"Error saving answers: {e}")
 
     def writeToFile(self, filename, answer_list):
         """
@@ -1507,8 +1534,8 @@ class OverallEmotionalWellbeing(Frame):
             filename (str): The name of the CSV file.
             answer_list (list): The list of answers from the survey section.
         """
-        # Create headers dynamically including "Participant ID" and "Timestamp"
-        headers = ["Participant ID", "Timestamp"] + ["Q{}".format(i) for i in range(1, len(answer_list) - 2 + 1)]
+        # Create headers dynamically including "Participant Status" and "Timestamp"
+        headers = ["Participant Status", "Timestamp"] + ["Q{}".format(i) for i in range(1, len(answer_list) - 2 + 1)]
         file_exists = os.path.isfile(filename)
 
         # Open the file in append mode
